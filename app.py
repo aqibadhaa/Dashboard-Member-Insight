@@ -9,7 +9,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="GDGoC UG 2026/2027 — Member Survey Dashboard",
-    page_icon="🚀",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -254,13 +254,13 @@ df = df_all[
 
 st.sidebar.markdown("---")
 st.sidebar.caption(
-    f"🔒 **Mode Privasi Aktif**: Data sensitif (Email, WA, IG) telah dihapus.\n\nMenampilkan **{len(df)}** dari **{len(df_all)}** member valid."
+    f"Data sensitif (Email, WA, IG) telah dihapus.\n\nMenampilkan **{len(df)}** dari **{len(df_all)}** member valid."
 )
 
 # ==========================================
 # 5. HEADER & KPI CARDS UTAMA
 # ==========================================
-st.title("🚀 GDGoC Universitas Gunadarma 2026/2027 — Member Insights")
+st.title("GDGoC Universitas Gunadarma 2026/2027 Member Insights")
 st.markdown(
     "Dashboard analitik terpadu untuk **Core Team & Supervisor (Tech & Non-Tech)** berdasarkan survei registrasi member baru."
 )
@@ -305,10 +305,10 @@ st.markdown("---")
 # ==========================================
 tab_ops, tab_curr, tab_mentor, tab_voice = st.tabs(
     [
-        "🎪 1. Event & Operasional (Non-Tech)",
-        "💻 2. Kurikulum & Skill Matrix (Tech)",
-        "🤝 3. Kandidat Peer Mentor & Direktori",
-        "💬 4. Aspirasi & Saran Member",
+        " 1. Event & Operasional (Non-Tech)",
+        " 2. Kurikulum & Skill Matrix (Tech)",
+        " 3. Kandidat Peer Mentor & Direktori",
+        " 4. Aspirasi & Saran Member",
     ]
 )
 
