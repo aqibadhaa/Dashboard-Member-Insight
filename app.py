@@ -228,7 +228,7 @@ def insight_card(points: list[tuple[str, str]]):
         cards_html += (
             f"<div style='background:{bg};border-left:4px solid {border};"
             f"border-radius:6px;padding:10px 14px;margin-bottom:8px;"
-            f"font-size:0.9rem;line-height:1.5;'>"
+            f"font-size:0.9rem;line-height:1.5;color:#1a1a1a;'>"
             f"{icon} {text}</div>"
         )
     st.markdown(
