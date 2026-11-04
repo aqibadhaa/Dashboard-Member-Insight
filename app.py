@@ -385,6 +385,55 @@ with tab_ops:
         fig_path.update_layout(showlegend=False, yaxis={"categoryorder": "total ascending"})
         st.plotly_chart(fig_path, use_container_width=True)
 
+        # Heatmap Main Path vs Secondary Interest
+        st.markdown("#### Relasi Main Path & Path Lain yang Diminati")
+        st.caption(
+            "Baris = Main Path utama member. Kolom = Path lain yang juga diminati. "
+            "Angka di tiap sel menunjukkan jumlah member dengan kombinasi tersebut. "
+            "Semakin gelap warnanya, semakin banyak minat di kombinasi itu."
+        )
+
+        INTEREST_COL = "Which paths are you interested in?"
+
+        # Expand multi-select: satu baris jadi beberapa baris per secondary path
+        rows_expanded = []
+        for _, row in df.iterrows():
+            main = row["Which one is your main path?"]
+            interests = str(row.get(INTEREST_COL, ""))
+            if interests in ("nan", ""):
+                continue
+            for path in PATH_OPTIONS:
+                if path in interests:
+                    rows_expanded.append({"Main Path": main, "Path Lain": path})
+        
+        if rows_expanded:
+            df_expanded = pd.DataFrame(rows_expanded)
+            heatmap_data = (
+                df_expanded.groupby(["Main Path", "Path Lain"])
+                .size()
+                .reset_index(name="Jumlah")
+            )
+            heatmap_pivot = heatmap_data.pivot(
+                index="Main Path", columns="Path Lain", values="Jumlah"
+            ).fillna(0)
+
+            fig_heat = px.imshow(
+                heatmap_pivot,
+                text_auto=True,
+                color_continuous_scale="Blues",
+                title="Heatmap: Main Path vs Path Lain yang Diminati",
+                aspect="auto",
+            )
+            fig_heat.update_layout(
+                xaxis_title="Path Lain yang Diminati",
+                yaxis_title="Main Path Utama",
+                coloraxis_showscale=False,
+            )
+            st.plotly_chart(fig_heat, use_container_width=True)
+        else:
+            st.info("Tidak ada data secondary path pada segmen yang dipilih.")
+
+
     with c2:
         year_prodi = (
             df.groupby(["Tingkat", "Program_Studi"])
