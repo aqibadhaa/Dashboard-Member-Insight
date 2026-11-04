@@ -217,9 +217,6 @@ def count_canonical_options(series, canonical_list):
 
 
 def insight_card(points: list[tuple[str, str]]):
-    """Render insight cards. Each point is a tuple of (emoji_level, text).
-    emoji_level: 'info' | 'warn' | 'danger'
-    """
     color_map = {
         "info":   ("#E8F4FD", "#1A73E8", "ℹ️"),
         "warn":   ("#FEF7E0", "#F9AB00", "⚠️"),
@@ -228,19 +225,14 @@ def insight_card(points: list[tuple[str, str]]):
     cards_html = ""
     for level, text in points:
         bg, border, icon = color_map.get(level, color_map["info"])
-        cards_html += f"""
-        <div style="
-            background:{bg};
-            border-left: 4px solid {border};
-            border-radius: 6px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        ">{icon} {text}</div>
-        """
+        cards_html += (
+            f"<div style='background:{bg};border-left:4px solid {border};"
+            f"border-radius:6px;padding:10px 14px;margin-bottom:8px;"
+            f"font-size:0.9rem;line-height:1.5;'>"
+            f"{icon} {text}</div>"
+        )
     st.markdown(
-        f'<div style="margin: 16px 0 20px 0">{cards_html}</div>',
+        f"<div style='margin:16px 0 20px 0'>{cards_html}</div>",
         unsafe_allow_html=True,
     )
 
