@@ -9,7 +9,7 @@ import streamlit as st
 # ==========================================
 st.set_page_config(
     page_title="GDGoC UG 2026/2027 — Member Survey Dashboard",
-    page_icon="",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -104,21 +104,30 @@ CLASS_CODE_TO_PRODI = {
 }
 
 # ==========================================
-# 3. PIPELINE DATA CLEANING OTOMATIS
+# 3. PIPELINE DATA CLEANING & SANITASI PII
 # ==========================================
 @st.cache_data
 def load_and_clean_data(file_source):
     df = pd.read_csv(file_source)
 
-    # 1. Hapus data dummy / testing dari email internal atau input acak
+    # 1. Pastikan kolom sensitif (PII) langsung dihapus jika masih ada
+    sensitive_cols = ["Email address", "WhatsApp number", "Instagram username"]
+    df = df.drop(
+        columns=[c for c in sensitive_cols if c in df.columns],
+        errors="ignore",
+    )
+
+    # 2. Hapus data dummy / testing tanpa bergantung pada kolom Email
     df = df[
-        ~df["Email address"]
+        ~df["Full name"]
         .astype(str)
-        .str.contains("dscgunadarma@gmail.com", case=False, na=False)
+        .str.strip()
+        .str.lower()
+        .isin(["asda", "test", "dummy"])
     ].copy()
     df = df[df["Full name"].astype(str).str.strip().str.len() > 2].copy()
 
-    # 2. Standarisasi kode Kelas & ekstraksi Tingkat + Jurusan
+    # 3. Standarisasi kode Kelas & ekstraksi Tingkat + Jurusan
     def normalize_class(val):
         val = str(val).upper().strip()
         val = re.sub(r"E\.?G\.?\s*", "", val).strip()
@@ -142,10 +151,12 @@ def load_and_clean_data(file_source):
     )
     df["Kode_Jurusan"] = df["Class_Clean"].str.extract(r"^[1-4]([A-Z]{2})")[0]
     df["Program_Studi"] = (
-        df["Kode_Jurusan"].map(CLASS_CODE_TO_PRODI).fillna(df["Study program"].str.title())
+        df["Kode_Jurusan"]
+        .map(CLASS_CODE_TO_PRODI)
+        .fillna(df["Study program"].astype(str).str.title())
     )
 
-    # 3. Gabungkan 5 pasangan kolom percabangan per Main Path
+    # 4. Gabungkan 5 pasangan kolom percabangan per Main Path
     skill_col_map = {
         "UI/UX Design": "What can you already do?",
         "Web Development": "What can you already do?.1",
@@ -170,7 +181,7 @@ def load_and_clean_data(file_source):
         axis=1,
     )
 
-    # 4. Hitung jumlah skill yang sudah dikuasai & status Pemula Murni
+    # 5. Hitung jumlah skill yang sudah dikuasai & status Pemula Murni
     def count_member_skills(row):
         path = row["Which one is your main path?"]
         skills_text = str(row["Current_Skills"])
@@ -208,7 +219,7 @@ def count_canonical_options(series, canonical_list):
 # ==========================================
 # 4. SIDEBAR & PEMUATAN DATA
 # ==========================================
-DEFAULT_CSV = "Member Survey Responses_ Google Developer Group on Campus Universitas Gunadarma - Form responses 1.csv"
+DEFAULT_CSV = "gdgoc member survey clean.csv"
 
 st.sidebar.title("🎛️ Filter & Kontrol")
 uploaded_file = st.sidebar.file_uploader(
@@ -220,7 +231,7 @@ try:
     df_all = load_and_clean_data(source)
 except FileNotFoundError:
     st.error(
-        f"File `{DEFAULT_CSV}` belum ditemukan di direktori yang sama. Silakan upload file CSV melalui panel kiri."
+        f"File `{DEFAULT_CSV}` belum ditemukan di direktori project. Pastikan file CSV yang sudah disanitasi berada satu folder dengan `app.py`."
     )
     st.stop()
 
@@ -235,9 +246,6 @@ selected_years = st.sidebar.multiselect(
     options=sorted(df_all["Tingkat"].unique()),
     default=sorted(df_all["Tingkat"].unique()),
 )
-show_pii = st.sidebar.toggle(
-    "Tampilkan Kontak Pribadi (WA/Email/IG)", value=False
-)
 
 df = df_all[
     (df_all["Which one is your main path?"].isin(selected_paths))
@@ -246,13 +254,13 @@ df = df_all[
 
 st.sidebar.markdown("---")
 st.sidebar.caption(
-    f"Menampilkan **{len(df)}** dari **{len(df_all)}** member valid (1 data dummy otomatis dihapus)."
+    f"🔒 **Mode Privasi Aktif**: Data sensitif (Email, WA, IG) telah dihapus.\n\nMenampilkan **{len(df)}** dari **{len(df_all)}** member valid."
 )
 
 # ==========================================
 # 5. HEADER & KPI CARDS UTAMA
 # ==========================================
-st.title("Google Developer Group on Campus Universitas Gunadarma 2026/2027 Member Insights")
+st.title("🚀 GDGoC Universitas Gunadarma 2026/2027 — Member Insights")
 st.markdown(
     "Dashboard analitik terpadu untuk **Core Team & Supervisor (Tech & Non-Tech)** berdasarkan survei registrasi member baru."
 )
@@ -297,10 +305,10 @@ st.markdown("---")
 # ==========================================
 tab_ops, tab_curr, tab_mentor, tab_voice = st.tabs(
     [
-        "  1. Event & Operasional (Non-Tech)",
-        "  2. Kurikulum & Skill Matrix (Tech)",
-        "  3. Kandidat Peer Mentor & Direktori",
-        "  4. Aspirasi & Saran Member",
+        "🎪 1. Event & Operasional (Non-Tech)",
+        "💻 2. Kurikulum & Skill Matrix (Tech)",
+        "🤝 3. Kandidat Peer Mentor & Direktori",
+        "💬 4. Aspirasi & Saran Member",
     ]
 )
 
@@ -486,7 +494,10 @@ with tab_mentor:
 
     mentors_df = df[
         df["Would you like to help teach or mentor in your main path?"] == "Yes"
-    ].sort_values(by=["Skill_Count", "Which one is your main path?"], ascending=[False, True])
+    ].sort_values(
+        by=["Skill_Count", "Which one is your main path?"],
+        ascending=[False, True],
+    )
 
     base_cols = [
         "Full name",
@@ -497,8 +508,6 @@ with tab_mentor:
         "Current_Skills",
         "Online or offline?",
     ]
-    if show_pii:
-        base_cols += ["Email address", "WhatsApp number", "Instagram username"]
 
     st.dataframe(
         mentors_df[base_cols].rename(
@@ -555,7 +564,19 @@ with tab_voice:
         .astype(str)
         .str.strip()
         .str.lower()
-        .isin(["-", "none", "nothing", "no", "tidak ada", "belum ada", "nothing yet", "nope", "aman"])
+        .isin(
+            [
+                "-",
+                "none",
+                "nothing",
+                "no",
+                "tidak ada",
+                "belum ada",
+                "nothing yet",
+                "nope",
+                "aman",
+            ]
+        )
     ]
 
     if search_kw:
